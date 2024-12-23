@@ -6,9 +6,9 @@ from .. import SparseTensor
 from .full_attn import sparse_scaled_dot_product_attention
 from .serialized_attn import SerializeMode, sparse_serialized_scaled_dot_product_self_attention
 from .windowed_attn import sparse_windowed_scaled_dot_product_self_attention
-from ...attention import RotaryPositionEmbedder
-
-
+from ...attention.modules import RotaryPositionEmbedder
+from ..basic import sparse_cat
+from ...attention.global_var import *
 class SparseMultiHeadRMSNorm(nn.Module):
     def __init__(self, dim: int, heads: int):
         super().__init__()
@@ -103,16 +103,64 @@ class SparseMultiHeadAttention(nn.Module):
         return qkv
     
     def forward(self, x: Union[SparseTensor, torch.Tensor], context: Optional[Union[SparseTensor, torch.Tensor]] = None) -> Union[SparseTensor, torch.Tensor]:
+        
         if self._type == "self":
             qkv = self._linear(self.to_qkv, x)
             qkv = self._fused_pre(qkv, num_fused=3)
+            h_len = qkv.feats.shape[0]
             if self.use_rope:
                 qkv = self._rope(qkv)
+            _multiframe = get_multiframe()
             if self.qk_rms_norm:
-                q, k, v = qkv.unbind(dim=1)
-                q = self.q_rms_norm(q)
-                k = self.k_rms_norm(k)
-                qkv = qkv.replace(torch.stack([q.feats, k.feats, v.feats], dim=1))
+                    
+                    if _multiframe:
+                        _first_run = get_first_run()
+                        
+                        _attention_idx = get_attention_idx_sparse()
+                        
+                        if _first_run:
+                            #print('first attn idx ', _attention_idx)
+                            q, k, v = qkv.unbind(dim=1)
+                            q = self.q_rms_norm(q)
+                            k = self.k_rms_norm(k)
+                            #v = v
+                            
+                            
+                            #_attention_idx += 1
+                            #set_attention_idx(_attention_idx)
+                            qkv = qkv.replace(torch.stack([q.feats, k.feats, v.feats], dim=1))
+                            append_history_attentions_sparse({'q': q.to('cpu'), 'k': k.to('cpu'), 'v': v.to('cpu')})
+                        else:
+
+                            #print('following attn idx ', _attention_idx)
+                            q, k, v = qkv.unbind(dim=1)
+                            q = self.q_rms_norm(q)
+                            k = self.k_rms_norm(k)
+                            q2 = sparse_cat([q ,0*(get_history_attentions_sparse_with_idx(_attention_idx)['q'].to('cuda')),0*(get_history_attentions_sparse_with_idx(_attention_idx)['q'].to('cuda'))] , dim=0)
+                            k2 = sparse_cat([k ,get_history_attentions_sparse_with_idx(_attention_idx)['k'].to('cuda'),get_history_attentions_sparse_with_idx(_attention_idx)['k'].to('cuda')] , dim=0)
+                            v2 = sparse_cat([v ,get_history_attentions_sparse_with_idx(_attention_idx)['v'].to('cuda'),get_history_attentions_sparse_with_idx(_attention_idx)['v'].to('cuda') ], dim=0) 
+                            
+                            #set_history_attentions_sparse_with_idx({'q': q.to('cpu'), 'k': k.to('cpu'), 'v': v.to('cpu')},_attention_idx)
+                            
+                            _attention_idx += 1
+                            set_attention_idx_sparse(_attention_idx)
+                            #v = v
+                            #import pdb; pdb.set_trace()
+                            
+                            qkv = qkv.replace(torch.stack([q2.feats, k2.feats, v2.feats], dim=1))
+                            #print('attn shape',qkv.feats.shape,q.feats.shape)
+                    else:
+                            q, k, v = qkv.unbind(dim=1)
+                            q = self.q_rms_norm(q)
+                            k = self.k_rms_norm(k)
+                            #v = v
+                            
+                            
+                            #_attention_idx += 1
+                            #set_attention_idx(_attention_idx)
+                            qkv = qkv.replace(torch.stack([q.feats, k.feats, v.feats], dim=1))
+            #print(self.attn_mode)
+            self.attn_mode == "full"
             if self.attn_mode == "full":
                 h = sparse_scaled_dot_product_attention(qkv)
             elif self.attn_mode == "serialized":
@@ -123,6 +171,8 @@ class SparseMultiHeadAttention(nn.Module):
                 h = sparse_windowed_scaled_dot_product_self_attention(
                     qkv, self.window_size, shift_window=self.shift_window
                 )
+            if _multiframe:
+                h = h.replace(h.feats[:h_len])
         else:
             q = self._linear(self.to_q, x)
             q = self._reshape_chs(q, (self.num_heads, -1))

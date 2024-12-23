@@ -2,6 +2,7 @@ from typing import *
 import torch
 from .. import SparseTensor
 from .. import DEBUG, ATTN
+from ...attention.global_var import *
 
 if ATTN == 'xformers':
     import xformers.ops as xops
@@ -185,7 +186,15 @@ def sparse_scaled_dot_product_attention(*args, **kwargs):
         if num_all_args == 3:
             assert k.shape[:2] == [1, sum(kv_seqlen)], f"SparseScaledDotProductSelfAttention: k shape mismatch"
             assert v.shape[:2] == [1, sum(kv_seqlen)], f"SparseScaledDotProductSelfAttention: v shape mismatch"
-
+    #import pdb; pdb.set_trace()
+    
+    if num_all_args == 1:
+        q, k, v = qkv.unbind(dim=1)
+        
+    elif num_all_args == 2:
+        k, v = kv.unbind(dim=1)
+    #print(ATTN, num_all_args, k.shape[0])
+    
     if ATTN == 'xformers':
         if num_all_args == 1:
             q, k, v = qkv.unbind(dim=1)
@@ -194,8 +203,8 @@ def sparse_scaled_dot_product_attention(*args, **kwargs):
         q = q.unsqueeze(0)
         k = k.unsqueeze(0)
         v = v.unsqueeze(0)
-        mask = xops.fmha.BlockDiagonalMask.from_seqlens(q_seqlen, kv_seqlen)
-        out = xops.memory_efficient_attention(q, k, v, mask)[0]
+
+        out = xops.memory_efficient_attention(q, k, v)[0]#, mask)[0]
     elif ATTN == 'flash_attn':
         cu_seqlens_q = torch.cat([torch.tensor([0]), torch.cumsum(torch.tensor(q_seqlen), dim=0)]).int().to(device)
         if num_all_args in [2, 3]:

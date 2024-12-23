@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .full_attn import scaled_dot_product_attention
 
-
+from .global_var import *
 class MultiHeadRMSNorm(nn.Module):
     def __init__(self, dim: int, heads: int):
         super().__init__()
@@ -119,13 +119,88 @@ class MultiHeadAttention(nn.Module):
                 q, k = self.rope(q, k, indices)
                 qkv = torch.stack([q, k, v], dim=2)
             if self.attn_mode == "full":
+                #print(self.qk_rms_norm)
                 if self.qk_rms_norm:
-                    q, k, v = qkv.unbind(dim=2)
-                    q = self.q_rms_norm(q)
-                    k = self.k_rms_norm(k)
-                    h = scaled_dot_product_attention(q, k, v)
+                    _multiframe = get_multiframe()
+                    
+                    if _multiframe:
+                        _first_run = get_first_run()
+                        
+                        _attention_idx = get_attention_idx()
+                        
+                        if _first_run:
+                            #print('first attn idx ', _attention_idx)
+                            q, k, v = qkv.unbind(dim=2)
+                            q = self.q_rms_norm(q)
+                            k = self.k_rms_norm(k)
+                            #v = v
+                            
+                            
+                            #_attention_idx += 1
+                            #set_attention_idx(_attention_idx)
+                            h = scaled_dot_product_attention(q, k, v)
+                            append_history_attentions({'k': k.to('cpu'),'v': v.to('cpu')})
+                        else:
+                            
+                            
+                            #print('following attn idx ', _attention_idx)
+                            q, k, v = qkv.unbind(dim=2)
+                            q = self.q_rms_norm(q)
+                            k = self.k_rms_norm(k)
+                            v = v
+                            if _attention_idx < 2*len_history_attentions()//3:
+
+                                q = torch.cat([q, 0*get_history_attentions_with_idx(_attention_idx)['k'].to('cuda')],dim=1)
+                                k = torch.cat([k, get_history_attentions_with_idx(_attention_idx)['k'].to('cuda')],dim=1)
+                                v = torch.cat([v, get_history_attentions_with_idx(_attention_idx)['v'].to('cuda')],dim = 1)
+                            
+                            #set_history_attentions_with_idx({'k': k0.to('cpu'),'v': v0.to('cpu')},_attention_idx)
+                            
+                            
+                            _attention_idx += 1
+                            set_attention_idx(_attention_idx)
+                            #v = v
+                            
+                            h = scaled_dot_product_attention(q, k, v)
+                            #import pdb; pdb.set_trace()
+                            
+                            
+                    else:
+                        q, k, v = qkv.unbind(dim=2)
+                        q = self.q_rms_norm(q)
+                        k = self.k_rms_norm(k)
+                        h = scaled_dot_product_attention(q, k, v)
                 else:
-                    h = scaled_dot_product_attention(qkv)
+                    _multiframe = get_multiframe()
+                    
+                    if _multiframe:
+                        _first_run = get_first_run()
+                        
+                        _attention_idx = get_attention_idx()
+                        
+                        if _first_run:
+                            print('first attn idx ',_attention_idx)
+                            append_history_attentions(qkv.to('cpu'))
+                            
+                            _attention_idx+=1
+                            set_attention_idx(_attention_idx)
+                            h = scaled_dot_product_attention(qkv)
+                            
+                        else:
+                            
+                            
+                            print('following attn idx ',_attention_idx)
+                            q = qkv
+                            
+                            k = (qkv+ get_history_attentions_with_idx(_attention_idx).to('cuda'))/2
+                            _attention_idx+=1
+                            set_attention_idx(_attention_idx)
+                            v = k
+                            h = scaled_dot_product_attention(q,k,v)
+                    else:
+                        #print('not using multi')
+                        h = scaled_dot_product_attention(qkv)
+                h = h[:,:L,...]
             elif self.attn_mode == "windowed":
                 raise NotImplementedError("Windowed attention is not yet implemented")
         else:
