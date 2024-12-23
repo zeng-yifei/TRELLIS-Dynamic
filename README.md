@@ -1,7 +1,6 @@
 <img src="assets/logo.webp" width="100%" align="center">
 <h1 align="center">A Simple dynamic extension for TRELLIS</h1>
 
-
 - This code aims to provide a training-free strategy for TRELLIS to generate continuous results through time. 
 - This is a forked version from TRELLIS. For the original work, please refer to the links below.
 
@@ -10,28 +9,16 @@
 <a href='https://huggingface.co/spaces/JeffreyXiang/TRELLIS'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Live_Demo-blue'></a>
 </p>
 
-## Exmaple Result
+## Example Result
 <p align="center">
-    <video width="240" height="240" controls>
-        <source src="assets/spiderman_mesh.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <video width="240" height="240" controls>
-        <source src="assets/spiderman_mesh_original.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <img src="assets/spiderman_mesh_thumbnail.png" width="240" height="240" alt="Spiderman Mesh">
+    <img src="assets/spiderman_mesh_original_thumbnail.png" width="240" height="240" alt="Spiderman Mesh Original">
 </p>
-Mesh result becomes obviously better in this algorithm. The overall shape is controlled in a stable shape throught time.
+Mesh result becomes obviously better in this algorithm. The overall shape is controlled in a stable shape through time.
 
 <p align="center">
-    <video width="240" height="240" controls>
-        <source src="assets/spiderman_gs.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <video width="240" height="240" controls>
-        <source src="assets/spiderman_gs_original.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <img src="assets/spiderman_gs_thumbnail.png" width="240" height="240" alt="Spiderman GS">
+    <img src="assets/spiderman_gs_original_thumbnail.png" width="240" height="240" alt="Spiderman GS Original">
 </p>
 The GS results have also improved, but there are still occasional flickers in the algorithm.
 
@@ -40,44 +27,29 @@ The GS results have also improved, but there are still occasional flickers in th
 
 Please follow the original installation in TRELLIS.
 
-## 🔨Requirement
+## 🔨 Requirement
 System RAM 48G at least, CUDA RAM 10G at least.
-The strategy used in this repo is very System-RAM consuming, as it saves all the attention to cpu. You can delete the `to('cpu')` in `trellis/modules/sparse/attention/modules.py` and `trellis/modules/attention/modules.py` to exchange System RAM for CUDA RAM if you have a better GPU.
+The strategy used in this repo is very System-RAM consuming, as it saves all the attention to CPU. You can delete the `to('cpu')` in `trellis/modules/sparse/attention/modules.py` and `trellis/modules/attention/modules.py` to exchange System RAM for CUDA RAM if you have a better GPU.
+
 <!-- Usage -->
 ## 💡 Usage
-1. Place all the imgs under a directory, make sure their name is correct. (e.g. 00.png-99.png)
+1. Place all the images under a directory, make sure their names are correct (e.g., 00.png-99.png).
 2. Run `dynamic.py` or `dynamic_cpu_efficient.py` according to your System RAM.
-3. See the result in output. It saves all the frames' result and a final result combining all frames.
+3. See the result in output. It saves all the frames' results and a final result combining all frames.
 
 ## Other Cases
 <p align="center">
-    <video width="240" height="240" controls>
-        <source src="assets/ironman_gs" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <video width="240" height="240" controls>
-        <source src="assets/ironman_mesh.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <img src="assets/ironman_gs_thumbnail.png" width="240" height="240" alt="Ironman GS">
+    <img src="assets/ironman_mesh_thumbnail.png" width="240" height="240" alt="Ironman Mesh">
 </p>
 <p align="center">
-    <video width="240" height="240" controls>
-        <source src="assets/pistol_gs.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <video width="240" height="240" controls>
-        <source src="assets/pistol_mesh" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <img src="assets/pistol_gs_thumbnail.png" width="240" height="240" alt="Pistol GS">
+    <img src="assets/pistol_mesh_thumbnail.png" width="240" height="240" alt="Pistol Mesh">
 </p>
 
 ## Failure Case
- 
 <p align="center">
-    <video width="240" height="240" controls>
-        <source src="assets/robot_mesh.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <img src="assets/robot_mesh_thumbnail.png" width="240" height="240" alt="Robot Mesh">
 </p>
 
 <!-- License -->
@@ -86,11 +58,7 @@ The strategy used in this repo is very System-RAM consuming, as it saves all the
 TRELLIS models and the majority of the code are licensed under the [MIT License](LICENSE). The following submodules may have different licenses:
 - [**diffoctreerast**](https://github.com/JeffreyXiang/diffoctreerast): We developed a CUDA-based real-time differentiable octree renderer for rendering radiance fields as part of this project. This renderer is derived from the [diff-gaussian-rasterization](https://github.com/graphdeco-inria/diff-gaussian-rasterization) project and is available under the [LICENSE](https://github.com/JeffreyXiang/diffoctreerast/blob/master/LICENSE).
 
-
 - [**Modified Flexicubes**](https://github.com/MaxtirError/FlexiCubes): In this project, we used a modified version of [Flexicubes](https://github.com/nv-tlabs/FlexiCubes) to support vertex attributes. This modified version is licensed under the [LICENSE](https://github.com/nv-tlabs/FlexiCubes/blob/main/LICENSE.txt).
-
-
-
 
 <!-- Citation -->
 ## 📜 Citation
@@ -105,4 +73,3 @@ If you find this work helpful, please consider citing the original paper:
     year    = {2024}
 }
 ```
-
