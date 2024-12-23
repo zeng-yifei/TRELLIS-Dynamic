@@ -11,14 +11,14 @@
 
 ## Example Result
 <p align="center">
-    <img src="assets/spiderman_mesh.png" width="240" height="240" alt="Spiderman Mesh">
-    <img src="assets/spiderman_mesh_original.png" width="240" height="240" alt="Spiderman Mesh Original">
+    <img src="assets/spiderman_mesh.gif" width="240" height="240" alt="Spiderman Mesh">
+    <img src="assets/spiderman_mesh_original.gif" width="240" height="240" alt="Spiderman Mesh Original">
 </p>
 Mesh result becomes obviously better in this algorithm. The overall shape is controlled in a stable shape through time.
 
 <p align="center">
-    <img src="assets/spiderman_gs.png" width="240" height="240" alt="Spiderman GS">
-    <img src="assets/spiderman_gs_original.png" width="240" height="240" alt="Spiderman GS Original">
+    <img src="assets/spiderman_gs.gif" width="240" height="240" alt="Spiderman GS">
+    <img src="assets/spiderman_gs_original.gif" width="240" height="240" alt="Spiderman GS Original">
 </p>
 The GS results have also improved, but there are still occasional flickers in the algorithm.
 
@@ -39,17 +39,17 @@ The strategy used in this repo is very System-RAM consuming, as it saves all the
 
 ## Other Cases
 <p align="center">
-    <img src="assets/ironman_gs.png" width="240" height="240" alt="Ironman GS">
-    <img src="assets/ironman_mesh.png" width="240" height="240" alt="Ironman Mesh">
+    <img src="assets/ironman_gs.gif" width="240" height="240" alt="Ironman GS">
+    <img src="assets/ironman_mesh.gif" width="240" height="240" alt="Ironman Mesh">
 </p>
 <p align="center">
-    <img src="assets/pistol_gs.png" width="240" height="240" alt="Pistol GS">
-    <img src="assets/pistol_mesh.png" width="240" height="240" alt="Pistol Mesh">
+    <img src="assets/pistol_gs.gif" width="240" height="240" alt="Pistol GS">
+    <img src="assets/pistol_mesh.gif" width="240" height="240" alt="Pistol Mesh">
 </p>
 
 ## Failure Case
 <p align="center">
-    <img src="assets/robot_mesh.png" width="240" height="240" alt="Robot Mesh">
+    <img src="assets/robot_mesh.gif" width="240" height="240" alt="Robot Mesh">
 </p>
 
 <!-- License -->
